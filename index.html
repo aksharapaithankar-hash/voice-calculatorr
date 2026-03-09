@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Voice Calculator</title>
+
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    padding:50px;
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+    transition:0.4s;
+}
+
+h1{
+    color:#004d40;
+}
+
+button,select{
+    padding:10px 15px;
+    font-size:16px;
+    margin:5px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+button{
+    background:#00796b;
+    color:white;
+}
+
+#status{
+    margin-top:20px;
+    font-size:18px;
+}
+
+#result{
+    margin-top:25px;
+    font-size:26px;
+    color:#c62828;
+}
+
+#history{
+    margin-top:20px;
+}
+
+#history div{
+    margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎤 Voice Calculator</h1>
+
+<select onchange="changeTheme(this.value)">
+<option value="blue">Blue</option>
+<option value="purple">Purple</option>
+<option value="green">Green</option>
+<option value="dark">Dark Mode</option>
+</select>
+
+<br><br>
+
+<button onclick="startListening()">🎤 Speak</button>
+<button onclick="stopListening()">⏹ Stop</button>
+<button onclick="clearAll()">🗑 Clear</button>
+
+<p>Example: "5 plus 3" or "10 divided by 2"</p>
+
+<div id="status">Status: Not Listening</div>
+<div id="result"></div>
+
+<h3>History</h3>
+<div id="history"></div>
+
+<script>
+
+let memory=null;
+
+const SpeechRecognition =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+document.getElementById("result").innerText =
+"Voice recognition not supported.";
+}
+
+const recognition = new SpeechRecognition();
+
+recognition.lang="en-US";
+recognition.continuous=false;
+recognition.interimResults=false;
+
+recognition.onstart=function(){
+document.getElementById("status").innerText="Status: Listening...";
+}
+
+recognition.onend=function(){
+document.getElementById("status").innerText="Status: Not Listening";
+}
+
+recognition.onresult=function(event){
+
+let spoken=event.results[0][0].transcript.toLowerCase();
+
+let expression=spoken
+.replace(/plus|add/g,"+")
+.replace(/minus|subtract/g,"-")
+.replace(/times|multiply/g,"*")
+.replace(/divide|over/g,"/");
+
+try{
+
+let result=eval(expression);
+
+memory=result;
+
+document.getElementById("result").innerText=
+spoken+" = "+result;
+
+document.getElementById("history").innerHTML+=
+"<div>"+spoken+" = "+result+"</div>";
+
+speak(result);
+
+}catch{
+
+document.getElementById("result").innerText=
+"Could not calculate.";
+
+}
+
+}
+
+function startListening(){
+recognition.start();
+}
+
+function stopListening(){
+recognition.stop();
+}
+
+function clearAll(){
+
+document.getElementById("result").innerText="";
+document.getElementById("history").innerHTML="";
+document.getElementById("status").innerText="Status: Not Listening";
+
+}
+
+function speak(text){
+
+let speech=new SpeechSynthesisUtterance(text);
+
+speech.lang="en-US";
+
+window.speechSynthesis.speak(speech);
+
+}
+
+function changeTheme(color){
+
+if(color=="blue")
+document.body.style.background="linear-gradient(135deg,#4facfe,#00f2fe)";
+
+if(color=="purple")
+document.body.style.background="linear-gradient(135deg,#a18cd1,#fbc2eb)";
+
+if(color=="green")
+document.body.style.background="linear-gradient(135deg,#43e97b,#38f9d7)";
+
+if(color=="dark"){
+document.body.style.background="#121212";
+document.body.style.color="white";
+}
+
+}
+
+</script>
+
+</body>
+</html>
